@@ -1,0 +1,11 @@
+---
+# vars file for testing-vsftpd-role
+
+version: '{{ vsftpd_version }}'
+package_name: vsftpd
+extract_path : "/tmp"
+binary_path: /usr/local/sbin
+ftp_install_dir : '{{ extract_path }}/{{ package_name }}-{{ version }}'
+download_url: "https://security.appspot.com/downloads/{{ package_name }}-{{ version }}.tar.gz"
+ftp_home_dir: /var/ftp
+ftp_user: ftp

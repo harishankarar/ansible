@@ -1,0 +1,40 @@
+---
+# defaults file for testing-vsftpd-role
+
+# Anonymous FTP parameters
+vsftpd_anonymous_enable: false
+vsftpd_anon_upload_enable: false
+vsftpd_anon_mkdir_write_enable: false
+
+# General settings
+vsftpd_ftpd_banner: 'FTP service' # edit Banner
+vsftpd_listen: true
+vsftpd_write_enable: true
+vsftpd_dirmessage_enable: true
+vsftpd_idle_session_timeout: 600
+vsftpd_pasv_address: 127.0.0.1 # replace with ip address
+vsftpd_pasv_max_port: 6000
+vsftpd_pasv_min_port: 5000
+
+# User settings
+vsftpd_pam_service_name: 'ftp'
+vsftpd_local_enable: true
+vsftpd_local_umask: '022'
+vsftpd_chroot_local_user: true
+vsftpd_allow_writeable_chroot: true
+
+# Other settings
+vsftpd_seccomp_sandbox: false
+
+
+
+
+
+vsftpd_download_md5_hash: 'efbf362a65bec771bc15ad311f5a982e'
+
+
+
+
+
+vsftpd_version: 3.0.5
+

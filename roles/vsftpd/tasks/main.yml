@@ -1,0 +1,201 @@
+---
+# tasks file for testing-vsftpd-role
+
+- include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_os_family }}.yml"
+    - default.yml
+
+- name: check if directory '{{extract_path}}' exists.
+  stat:
+    path: '{{extract_path}}'
+  register: vsftpd_path
+
+- name: Download & Extract vsftpd
+  become: true
+  unarchive:
+    src: '{{download_url}}'
+    dest: '{{extract_path}}'
+    remote_src: yes
+    mode: 0755
+    owner: root
+    group: root
+  when: vsftpd_path.stat.exists
+  register: unarchive_status
+
+- name: "Check if listed package is installed or not on Debian Linux family"
+  command: dpkg-query -l "{{ item }}"
+  loop: "{{ vsftpd_prerequsite_packages }}"
+  ignore_errors: true
+  #register: package_check
+
+- name: Update apt cache and make sure gcc and make are installed
+  become: true
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+  loop: "{{ vsftpd_prerequsite_packages }}"
+  #register: required_packages
+
+#- name: check if the file '{{ftp_install_dir}}/{{package_name}}' exists.
+#  stat:
+#    path: '{{ftp_install_dir}}/{{package_name}}'
+#  register: vsftpd_file_path
+  
+- name: Installing vsftpd
+  become: true
+  shell: make
+  args:
+    chdir: "{{ ftp_install_dir }}"
+#  when: vsftpd_file_path.stat.exists == false
+  register: compile_status
+
+- name: Check if the file '{{binary_path}}' exists.
+  stat:
+    path: '{{binary_path}}'
+  register: vsftpd_binary_path
+
+- name: Copy vsftpd executable
+  become: true
+  copy:
+    src: "{{ftp_install_dir}}/vsftpd"
+    dest: '{{binary_path}}/vsftpd'
+    owner: root
+    group: root
+    mode: 0766
+    remote_src: yes
+#  when: vsftpd_binary_path.stat.exists == false
+
+- name: Copy vsftpd user lists
+  become: true
+  copy: 
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - { src: '{{ role_path }}/files/vsftpd.chroot_list', dest: '/etc/vsftpd.chroot_list' }
+    - { src: '{{ role_path }}/files/vsftpd.user_list', dest: '/etc/vsftpd.user_list' }
+
+- name: Creates directory
+  become: true
+  file:
+    path: '{{ item }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0775
+  with_items:
+    - /var/run/vsftpd
+    - /var/run/vsftpd/empty
+
+- name: Check if the directory /usr/local/man/man5 exists.
+  stat:
+    path: /usr/local/man/man5
+  register: man5_path
+
+- name: Create man5 directory if not exists
+  become: true
+  file:
+    path: '/usr/local/man/man5'
+    state: directory
+    owner: root
+    group: root
+    mode: 0775
+  when: man5_path.stat.exists == false
+
+- name: Copy vsftpd man5
+  become: true
+  copy: 
+    src: '{{ftp_install_dir}}/vsftpd.conf.5'
+    dest: '/usr/local/man/man5/vsftpd.conf.5'
+    owner: root
+    group: root
+    mode: 0644
+    force: yes
+    remote_src: yes
+
+- name: Check if the directory /usr/local/man/man8 exists.
+  stat:
+    path: /usr/local/man/man8
+  register: man8_path
+
+- name: Create man8 directory if not exists
+  become: true
+  file:
+    path: '/usr/local/man/man8'
+    state: directory
+    owner: root
+    group: root
+    mode: 0775
+  when: man8_path.stat.exists == false
+
+- name: Copy vsftpd man8
+  become: true
+  copy: 
+    src: '{{ftp_install_dir}}/vsftpd.8'
+    dest: '/usr/local/man/man8/vsftpd.8'
+    owner: root
+    group: root
+    mode: 0644
+    force: yes
+    remote_src: yes
+
+- name: Check if the directory '{{ftp_home_dir}}' exists.
+  stat:
+    path: '{{ftp_home_dir}}'
+  register: ftp_home
+
+- name: Create '{{ftp_home_dir}}' directory if not exists
+  become: true
+  file:
+    path: '{{ftp_home_dir}}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  when: ftp_home.stat.exists == false
+
+- name: Check for user ftp
+  command: grep ftp -q /etc/passwd
+  changed_when: false
+  ignore_errors: true
+  register: user_ftp
+
+- name: Create user ftp
+  become: true
+  user:
+    name: '{{ ftp_user }}'
+    createhome: no
+    home: '{{ ftp_home_dir }}'
+    shell: /usr/sbin/nologin
+    system: yes
+    state: present
+  when: user_ftp.rc != 0
+
+- name: Check for user nobody
+  command: grep nobody -q /etc/passwd
+  changed_when: false
+
+- name: Copy vsftpd service file
+  become: true
+  copy: 
+    src: '{{ role_path }}/files/vsftpd.service'
+    #dest: '/etc/systemd/system/vsftpd.service'
+    dest: '/usr/lib/systemd/system/vsftpd.service'
+    owner: root
+    group: root
+    mode: 0644
+
+- name: reload daemon
+  service:
+    daemon_reload: yes
+
+- name: Install configuration file
+  become: true
+  template:
+    src:   vsftpd.conf.j2
+    dest: "{{ vsftpd_config_file }}"
+    mode: '0600'
+  notify: restart vsftpd

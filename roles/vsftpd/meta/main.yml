@@ -1,0 +1,5 @@
+galaxy_info:
+  role_name: vsftpd
+  description: An Ansible role to Install and configure the vsftpd service
+  Author: Hari Shankarar T
+  company: Msys

@@ -1,0 +1,265 @@
+# Vsftpd configuration
+# Managed by Ansible, don't edit manually
+
+#--------------------------------------------------------------------
+# Anonymous FTP parameters
+#--------------------------------------------------------------------
+# Allow anonymous FTP? (Beware - allowed by default if you comment this out).
+anonymous_enable={{ 'YES' if vsftpd_anonymous_enable else 'NO' }}
+
+# Uncomment this to allow the anonymous FTP user to upload files. This only
+# has an effect if the above global write enable is activated. Also, you will
+# obviously need to create a directory writable by the FTP user.
+# Default: NO
+anon_upload_enable={{ 'YES' if vsftpd_anon_upload_enable else 'NO' }}
+
+# Uncomment this if you want the anonymous FTP user to be able to create
+# new directories.
+# Default: NO
+anon_mkdir_write_enable={{ 'YES' if vsftpd_anon_mkdir_write_enable else 'NO' }}
+
+#-----------------------------------------------------------------------
+# General settings
+#-----------------------------------------------------------------------
+#
+# You may fully customise the login banner string:
+ftpd_banner={{vsftpd_ftpd_banner}}
+
+# When "listen" directive is enabled, vsftpd runs in standalone mode and
+# listens on IPv4 sockets. This directive cannot be used in conjunction
+# with the listen_ipv6 directive.
+listen={{ 'YES' if vsftpd_listen else 'NO' }}
+
+# This directive enables listening on IPv6 sockets. To listen on IPv4 and IPv6
+# sockets, you must run two copies of vsftpd with two configuration files.
+# Make sure, that one of the listen options is commented !!
+#listen_ipv6=YES
+
+# If enabled, vsftpd will display directory listings with the time in your local time zone.
+# The default is to display GMT. the times returned by the MDTM FTP command are also affected by this option.
+# Default: NO
+use_localtime=NO
+
+# Uncomment this to enable any form of FTP write command.
+write_enable={{ 'YES' if vsftpd_write_enable else 'NO' }}
+
+# Activate directory messages - messages given to remote users when they
+# go into a certain directory.
+dirmessage_enable={{ 'YES' if vsftpd_dirmessage_enable else 'NO' }}
+
+# Make sure PORT transfer connections originate from port 20 (ftp-data).
+connect_from_port_20=YES
+
+# You may change the default value for timing out an idle session.
+idle_session_timeout={{vsftpd_idle_session_timeout}}
+
+# You may change the default value for timing out a data connection.
+data_connection_timeout=120
+
+# Use this option to override the IP address that vsftpd will advertise in response
+# to the PASV command. Provide a numeric IP address, unless pasv_addr_resolve is
+# enabled, in which case you can provide a hostname which will be DNS resolved
+# for you at startup.
+# Default: (none - the address is taken from the incoming connected socket)
+pasv_address={{vsftpd_pasv_address}}
+
+# Set to YES if you want to use a hostname (as opposed to IP address) in the
+# pasv_address option.
+# Default: NO
+#pasv_addr_resolve=NO
+
+# The maximum port to allocate for PASV style data connections. Can be used
+# to specify a narrow port range to assist firewalling.
+# Default: 0 (use any port)
+pasv_max_port={{vsftpd_pasv_max_port}}
+
+# The minimum port to allocate for PASV style data connections. Can be used
+# to specify a narrow port range to assist firewalling.
+#Default: 0 (use any port)
+pasv_min_port={{vsftpd_pasv_min_port}}
+
+#------------------------------------------------------------------------
+# Logger settings
+#------------------------------------------------------------------------
+#
+# Activate logging of uploads/downloads.
+xferlog_enable=YES
+
+# You may override where the log file goes if you like. The default is shown
+# below.
+xferlog_file=/var/log/vsftpd.log
+
+# If you want, you can have your log file in standard ftpd xferlog format.
+# Note that the default log file location is /var/log/xferlog in this case.
+xferlog_std_format=NO
+
+#------------------------------------------------------------------------
+# User settings
+#------------------------------------------------------------------------
+#
+# This string isteh name of the PAM service vsftpd will use.
+# Default: ftp
+pam_service_name={{vsftpd_pam_service_name}}
+
+# It is recommended that you define on your system a unique user which the
+# ftp server can use as a totally isolated and unprivileged user.
+# Default: nobody
+nopriv_user=nobody
+
+# Uncomment this to allow local users to log in.
+local_enable={{ 'YES' if vsftpd_local_enable else 'NO' }}
+
+# Default umask for local users is 077. You may wish to change this to 022,
+# if your users expect that (022 is used by most other ftpd's)
+local_umask={{vsftpd_local_umask}}
+
+# You may specify an explicit list of local users to chroot() to their home
+# directory. If chroot_local_user is YES, then this list becomes a list of
+# users to NOT chroot().
+# (Warning! chroot'ing can be very dangerous. If using chroot, make sure that
+# the user does not have write access to the top level directory within the
+# chroot)
+chroot_local_user={{ 'YES' if vsftpd_chroot_local_user else 'NO' }}
+chroot_list_enable=YES
+# (default follows)
+chroot_list_file=/etc/vsftpd.chroot_list
+
+# If enabled, the chroot of virtual users may be writeable
+# Default: NO
+allow_writeable_chroot={{ 'YES' if vsftpd_allow_writeable_chroot else 'NO' }}
+
+# If you want, you can arrange for uploaded anonymous files to be owned by
+# a different user. Note! Using "root" for uploaded files is not
+# recommended!
+#chown_uploads=YES
+#chown_username=whoever
+
+# If enabled, vsftpd will load a list of usernames, from the filename given by userlist_file.  If a user tries to log in using a name in this file, they will be denied before they are
+# asked for a password. This may be useful in preventing cleartext passwords being transmitted. See also userlist_deny.
+# Default: NO
+userlist_enable=YES
+
+# This option is the name of the file loaded when the userlist_enable option is active.
+# Default: /etc/vsftpd.user_list
+userlist_file=/etc/vsftpd.user_list
+
+# You may specify a file of disallowed anonymous e-mail addresses. Apparently
+# useful for combatting certain DoS attacks.
+deny_email_enable=NO
+# (default follows)
+banned_email_file=/etc/vsftpd.banned_emails
+
+#------------------------------------------------------------------------
+# SSL Settings
+#------------------------------------------------------------------------
+#
+# If enabled, this option will permit TLS v1 protocol connections.
+# Default: YES
+ssl_tlsv1=YES
+
+# This option specifies the location of the RSA certificate to use for SSL encrypted connections.
+# Default: /usr/share/ssl/certs/vsftpd.pem
+rsa_cert_file=/usr/share/ssl/certs/vsftpd.pem
+
+# This option specifies the location of the RSA private key to use for SSL encrypted connections.
+# If this option is not set, the private key is expected to be in the same file as the certificate.
+# Default: (none)
+rsa_private_key_file=
+
+# If activated, all non-anonymous logins are forced to use a secure SSL connection in order to
+# send and receive data on data connections.
+# Default: YES
+force_local_data_ssl=YES
+
+# If activated, all non-anonymous logins are forced to use a secure SSL connection in order to
+# send the password.
+# Default: YES
+force_local_logins_ssl=YES
+
+# If set to yes, all SSL data connections are required to exhibit SSL session reuse (which proves that they
+# know the same master secret as the control channel). Although this is a secure default, it may break many
+# FTP clients, so you may want to disable it.
+# Default: YES
+require_ssl_reuse=YES
+
+# This option can be used to select which SSL ciphers vsftpd will allow for encrypted SSL connections.
+# See the ciphers man page for further details. Note that restricting ciphers can be a useful security
+# precaution as it prevents malicious remote parties forcing a cipher which they have found problems with.
+# Default: DES-CBC3-SHA
+ssl_ciphers=DES-CBC3-SHA
+
+# If true, OpenSSL connection diagnostics are dumped to the vsftpd log file.
+# Default: NO
+debug_ssl=NO
+
+#------------------------------------------------------------------------
+# Other settings
+#------------------------------------------------------------------------
+#
+# This powerful option allows the override of any config option specified in
+# the manual page, on a per-user basis. Usage is simple, and is best illustrated
+# with an example. If you set user_config_dir to be /etc/vsftpd_user_conf and
+# then log on as the user "chris", then vsftpd will apply the settings in the
+# file /etc/vsftpd_user_conf/chris for the duration of the session. The format
+# of this file is as detailed in this manual page! PLEASE NOTE that not all
+# settings are effective on a per-user basis. For example, many settings only
+# prior to the user's session being started. Examples of settings which will
+# not affect any behviour on a per-user basis include listen_address,
+# banner_file, max_per_ip, max_clients, xferlog_file, etc.
+user_config_dir=
+
+# This option represents a directory which vsftpd will try to change into
+# after a local (i.e. non-anonymous) login. Failure is silently ignored.
+local_root=
+
+# This option should be the name of a directory which is empty. Also, the
+# directory should not be writable by the ftp user. This directory is used as
+# a secure chroot() jail at times vsftpd does not require filesystem access.
+secure_chroot_dir=/var/run/vsftpd/empty
+
+# This option is useful is conjunction with virtual users. It is used to
+# automatically generate a home directory for each virtual user, based on a
+# template. For example, if the home directory of the real user specified via
+# guest_username is /home/virtual/$USER, and user_sub_token is set to $USER,
+# then when virtual user fred logs in, he will end up (usually chroot()'ed) in
+# the directory /home/virtual/fred. This option also takes affect if
+# local_root contains user_sub_token.
+# Default: (none)
+user_sub_token=
+
+# This options specifies a comma separated list of allowed FTP commands (post login. USER, PASS and QUIT
+# and others are always allowed pre-login). Other commands are rejected.
+# Default: (none)
+cmds_allowed=
+
+# If set to yes, process is run within a seccomp sandbox and hence is only allowed to make use of a limited set
+# of system calls, such as exit(), sigreturn(), read() and write() to opened file descriptors.
+# Default: YES
+seccomp_sandbox={{ 'YES' if vsftpd_seccomp_sandbox else 'NO' }}
+
+# Enable this and the server will recognise asynchronous ABOR requests. Not
+# recommended for security (the code is non-trivial). Not enabling it,
+# however, may confuse older FTP clients.
+#async_abor_enable=YES
+
+# By default the server will pretend to allow ASCII mode but in fact ignore
+# the request. Turn on the below options to have the server actually do ASCII
+# mangling on files when in ASCII mode.
+# Beware that on some FTP servers, ASCII support allows a denial of service
+# attack (DoS) via the command "SIZE /big/file" in ASCII mode. vsftpd
+# predicted this attack and has always been safe, reporting the size of the
+# raw file.
+# ASCII mangling is a horrible feature of the protocol.
+#ascii_upload_enable=YES
+#ascii_download_enable=YES
+
+# You may activate the "-R" option to the builtin ls. This is disabled by
+# default to avoid remote users being able to cause excessive I/O on large
+# sites. However, some broken FTP clients such as "ncftp" and "mirror" assume
+# the presence of the "-R" option, so there is a strong case for enabling it.
+#ls_recurse_enable=YES
+
+# check_shell
+# Note! This option only has an effect for non-PAM builds of vsftpd. If disabled, vsftpd will not check /etc/shells for a valid user shell for local logins.
+# Default: YES
+check_shell=NO

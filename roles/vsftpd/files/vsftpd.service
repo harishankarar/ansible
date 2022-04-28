@@ -1,0 +1,13 @@
+# File managed by Ansible, don't edit manually
+# /usr/lib/systemd/system/vsftpd.service
+[Unit]
+Description=Vsftpd ftp daemon
+Documentation=man:vsftpd(8) man:vsftpd(5)
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/sbin/vsftpd
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,11 @@
+# variable for debian
+---
+
+vsftpd_prerequsite_packages:
+  - gcc
+  - make
+  - ssl-cert
+
+vsftpd_service: vsftpd.service
+
+vsftpd_config_file: /etc/vsftpd.conf

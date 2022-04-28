@@ -1,0 +1,6 @@
+---
+- name: use vsftpd role playbook
+  hosts: ftp_servers
+
+  roles:
+    - role: vsftpd
